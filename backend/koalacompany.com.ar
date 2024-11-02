@@ -1,0 +1,53 @@
+server {
+    listen 80;
+    server_name koalacompany.com.ar www.koalacompany.com.ar;
+
+    location /api {
+        proxy_pass http://localhost:3000; # Redirige las solicitudes de la API al backend
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    location / {
+        root /var/www/koalacompany.com.ar/frontend; # Ruta del frontend
+        try_files $uri $uri/ /index.html; # Manejo de rutas para SPA
+    }
+
+    error_page 404 /404.html; # Manejo de errores
+    location = /404.html {
+        internal;
+    }
+}
+
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/koalacompany.com.ar/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/koalacompany.com.ar/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+
+}
+
+server {
+    if ($host = www.koalacompany.com.ar) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    if ($host = koalacompany.com.ar) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    listen 80;
+    server_name koalacompany.com.ar www.koalacompany.com.ar;
+    return 404; # managed by Certbot
+
+
+
+
+}
